@@ -30,8 +30,7 @@ Weather data quality pipeline built in n8n as part of the Intermediate Workflow 
 
 ## Workflow Architecture
 
-text
-```
+``` text
 Hourly Schedule
        │
        ▼
