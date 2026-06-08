@@ -70,6 +70,10 @@ Success
 
 ## Workflow Steps
 
+<p align="left">
+  <img src="images\workflow-overview (1).png" width="600">
+</p>
+
 ### 1. Data Ingestion
 
 The workflow runs automatically every hour and retrieves weather data from the wttr.in API.
