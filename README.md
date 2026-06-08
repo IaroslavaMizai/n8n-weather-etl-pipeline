@@ -30,6 +30,8 @@ Weather data quality pipeline built in n8n as part of the Intermediate Workflow 
 
 ## Workflow Architecture
 
+text
+```
 Hourly Schedule
        │
        ▼
@@ -65,7 +67,7 @@ Store Data   Log Pipeline Error
     │
     ▼
 Success
-
+```
 
 ## Workflow Steps
 
