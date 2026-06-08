@@ -1,0 +1,414 @@
+{
+  "name": "Final  Project",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -144
+      ],
+      "id": "0cc3849a-e7f4-4224-9bf9-2d6495d155e2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://wttr.in/London?format=j1",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        112,
+        -144
+      ],
+      "id": "8e8bb264-624d-4d01-b62b-afb8543e630b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const weather =\n  $input.all()[0].json; const current =\n  weather.current_condition[0]; const area =\n  weather.nearest_area[0]; const city = area.areaName[0].value;\n  const fetchedAt = new Date().toISOString();\n  return [{\n    json: {\n      city: city,\n      temp_c: parseFloat(current.temp_C),\n      humidity: parseFloat(current.humidity),\n      description: current.weatherDesc[0].value,\n      fetched_at: fetchedAt,\n      date_key: city + '_' + fetchedAt.split('T')[0]\n    }\n  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -144
+      ],
+      "id": "7ba4d488-11ec-459f-becd-1f30e929f833",
+      "name": "Transform Data"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "9cRlpkS7GAdwmvBZ",
+          "mode": "list",
+          "cachedResultName": "weather_records",
+          "cachedResultUrl": "/projects/KUAx77SdojPjfgfJ/datatables/9cRlpkS7GAdwmvBZ"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        192
+      ],
+      "id": "0cfa8aac-cd4e-4c69-85da-f4b95198f52b",
+      "name": "Check Existing Records",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const existingRecords =\n  $('Check Existing Records').all(); const storedKeys =\n  existingRecords.map(r => r.json.date_key); const items =\n  $('Transform Data').all(); const newItems = items.filter(item => {\n    const dateKey = item.json.city + '_' + item.json.fetched_at.split('T')[0];\n    return !storedKeys.includes(dateKey);\n  }); if (newItems.length === 0) {\n    return [];\n  }\n  return newItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        192
+      ],
+      "id": "728e2616-6252-43a6-b90b-58a5278af4f2",
+      "name": "Filter New Records"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        368,
+        192
+      ],
+      "id": "b87bbc37-9cb5-41f0-95d2-ee1d9af578b6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07ddcf20-7c49-45ff-a6e0-aa494f700f02",
+              "name": "batch_processed_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        352
+      ],
+      "id": "45c32816-5004-452d-aa74-2a234a5715cd",
+      "name": "Add Batch Timestamp"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n  const issues = [];\n  for (const item of items) {\n    if (!item.json.city || item.json.city.trim() === '') {\n      issues.push('Empty city found');\n    }\n    if (item.json.temp_c === undefined || isNaN(item.json.temp_c) || item.json.temp_c < -100 || item.json.temp_c > 60) {\n      issues.push('Invalid temp_c: ' + item.json.temp_c);\n    }\n  }\n  return [{ json: { pass: issues.length === 0, total: items.length, issues: issues } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        176
+      ],
+      "id": "42ed42e5-9ad6-4cb3-bbce-db88d650ace4",
+      "name": "Evaluate Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7fe1e43-07cd-481f-97ab-531f26530b64",
+              "name": "result",
+              "value": "Pipeline completed successfully",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        80
+      ],
+      "id": "71518da3-e23f-4b43-acca-ad783fff9c79",
+      "name": "Success"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca09c30a-d219-4a4e-8b82-289089885021",
+              "name": "result",
+              "value": "Pipeline failed quality checks",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        272
+      ],
+      "id": "d344ad3f-901b-4ba2-bf64-fd39521f2eee",
+      "name": "Log Pipeline Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "67319021-b0eb-4a65-8412-d8dd9a1625e1",
+              "leftValue": "={{ $json.pass }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        800,
+        176
+      ],
+      "id": "8a4be060-9c89-4b7f-a57c-bf937e278abc",
+      "name": " Quality Gate"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "9cRlpkS7GAdwmvBZ",
+          "mode": "list",
+          "cachedResultName": "weather_records",
+          "cachedResultUrl": "/projects/KUAx77SdojPjfgfJ/datatables/9cRlpkS7GAdwmvBZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "city": "={{ $('Loop Over Items').item.json.city }}",
+            "date_key": "={{ $('Loop Over Items').item.json.date_key }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_key",
+              "displayName": "date_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        80
+      ],
+      "id": "b71b8b05-be82-4322-a728-08dff3853d47",
+      "name": "Store Data"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Records": {
+      "main": [
+        [
+          {
+            "node": "Filter New Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter New Records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add Batch Timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Batch Timestamp": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Output": {
+      "main": [
+        [
+          {
+            "node": " Quality Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Quality Gate": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Pipeline Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success": {
+      "main": [
+        [
+          {
+            "node": "Store Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c26ea048-b4c4-471f-9cd3-c0f2e61fd1e1",
+  "meta": {
+    "instanceId": "707408e733d4ac5811d72ce80dd850e5b49faad9753615c1ade2bee415f93861"
+  },
+  "id": "wMRYU6duJC9uCW0w",
+  "tags": []
+}
