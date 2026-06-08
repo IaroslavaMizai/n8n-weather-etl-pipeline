@@ -71,7 +71,7 @@ Success
 ## Workflow Steps
 
 <p align="left">
-  <img src="images\workflow-overview (1).png" width="900">
+  <img src="images\workflow-overview (1).png" width="1000">
 </p>
 
 ### 1. Data Ingestion
