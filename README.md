@@ -2,7 +2,7 @@
 
 Automated weather data processing workflow built with n8n.
 
-This project was developed while completing the [**Intermediate Workflow Automation with n8n**](https://app.datacamp.com/learn/courses/intermediate-workflow-automation-with-n8n)  course. The workflow demonstrates an end-to-end ETL process including scheduled data ingestion, transformation, deduplication, batch processing, quality validation, and data persistence.
+This project was developed while completing the **Intermediate Workflow Automation with n8n** course. The workflow demonstrates an end-to-end ETL process including scheduled data ingestion, transformation, deduplication, batch processing, quality validation, and data persistence.
 
 ## Workflow
 
@@ -154,4 +154,4 @@ Quality checks determine whether execution continues through the Success path or
 
 ## Learning Context
 
-Capstone project created during the **Intermediate Workflow Automation with n8n** course.
+Capstone project created during the [**Intermediate Workflow Automation with n8n**](https://app.datacamp.com/learn/courses/intermediate-workflow-automation-with-n8n) course.
