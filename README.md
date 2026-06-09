@@ -2,35 +2,15 @@
 
 Automated weather data processing workflow built with n8n.
 
-This project was developed while completing the Intermediate Workflow Automation with n8n course. The workflow demonstrates an end-to-end ETL process including scheduled data ingestion, transformation, deduplication, batch processing, and quality validation.
+This project was developed while completing the **Intermediate Workflow Automation with n8n** course. The workflow demonstrates an end-to-end ETL process including scheduled data ingestion, transformation, deduplication, batch processing, quality validation, and data persistence.
 
-## Repository Description
+## Workflow
 
-Weather data quality pipeline built in n8n as part of the Intermediate Workflow Automation with n8n course.
-
-## Features
-
-* Hourly scheduled execution
-* Weather API integration
-* Data transformation and normalization
-* Duplicate detection
-* Batch processing
-* Data quality validation
-* Conditional success/failure routing
-* Workflow orchestration using n8n
-
-## Technologies
-
-* n8n
-* JavaScript
-* HTTP Request
-* Data Tables
-* Workflow Automation
-* REST APIs
+![Workflow Overview](images/workflow-overview.png)
 
 ## Workflow Architecture
 
-``` text
+```text
 Hourly Schedule
        │
        ▼
@@ -68,11 +48,44 @@ Store Data   Log Pipeline Error
 Success
 ```
 
-## Workflow Steps
+## Overview
 
-<p align="left">
-  <img src="images\workflow-overview.png" width="1000">
-</p>
+The workflow retrieves weather data from an external API, transforms it into a normalized structure, removes duplicate records, processes data in batches, validates data quality, and stores validated records for future deduplication checks.
+
+Validated records are stored in the `weather_records` table. The same table is used during future executions to identify previously processed records and prevent duplicate processing.
+
+Records that fail validation are routed through a dedicated error-handling path.
+
+## Features
+
+* Scheduled hourly execution
+* Weather API integration
+* Data transformation and normalization
+* Duplicate detection
+* Batch processing
+* Data quality validation
+* Data persistence
+* Success and error routing
+
+## Technologies
+
+* n8n
+* JavaScript
+* HTTP Request
+* Data Tables
+* REST APIs
+* Workflow Automation
+
+## Data Table Structure
+
+The workflow uses a Data Table named `weather_records`.
+
+| Column   | Type   |
+| -------- | ------ |
+| city     | String |
+| date_key | String |
+
+## Workflow Steps
 
 ### 1. Data Ingestion
 
@@ -91,7 +104,9 @@ Raw weather data is normalized into a structured format containing:
 
 ### 3. Duplicate Detection
 
-Existing records are checked against stored data using a generated date key. Previously processed records are excluded.
+Existing records are retrieved from the `weather_records` table and compared against incoming weather data using a generated date key.
+
+Previously processed records are filtered out before entering the processing pipeline.
 
 ### 4. Batch Processing
 
@@ -105,33 +120,38 @@ The workflow validates:
 * valid temperature values
 * expected data structure
 
-### 6. Conditional Routing
+### 6. Data Persistence
 
-Quality checks determine whether execution continues through the Success path or Failure path.
+Validated records are stored in the `weather_records` table and reused during future workflow executions to prevent duplicate processing.
+
+### 7. Conditional Routing
+
+Quality checks determine whether execution continues through the Success path or the Error path.
 
 ## Sample Output
 
+```json
 {
-"city": "London",
-"temp_c": 18,
-"humidity": 72,
-"description": "Partly cloudy",
-"fetched_at": "2026-05-28T14:00:00Z",
-"date_key": "London_2026-05-28"
+  "city": "London",
+  "temp_c": 18,
+  "humidity": 72,
+  "description": "Partly cloudy",
+  "fetched_at": "2026-05-28T14:00:00Z",
+  "date_key": "London_2026-05-28"
 }
+```
+
+## Skills Demonstrated
+
+* Workflow Automation
+* API Integration
+* Data Transformation
+* Deduplication Logic
+* Batch Processing
+* Data Quality Validation
+* Data Persistence
+* ETL Pipeline Design
 
 ## Learning Context
 
-This project was created while completing the Intermediate Workflow Automation with n8n course.
-
-Skills practiced:
-
-* Workflow design
-* API integration
-* Data transformation
-* Deduplication logic
-* Batch processing
-* Data quality validation
-* Conditional workflow routing
-* End-to-end workflow orchestration
-
+Capstone project created during the **Intermediate Workflow Automation with n8n** course.
